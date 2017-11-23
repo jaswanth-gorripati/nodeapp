@@ -298,6 +298,7 @@ var getRegisteredUsers1 = function(username,passkey,userOrg, isJson) {
 };
 var enrollRegisteredUsers = function(username,passkey,userOrg, isJson) {
 	var member;
+	var enrolledUserAttributes;
 	var client = getClientForOrg(userOrg);
 	var enrollmentSecret = null;
 	return hfc.newDefaultKeyValueStore({
@@ -307,12 +308,24 @@ var enrollRegisteredUsers = function(username,passkey,userOrg, isJson) {
 		// clearing the user context before switching
 		client._userContext = null;
 		return client.getUserContext(username, true).then((user) => {
-			if (user && user.isEnrolled()) {
+			/*if (user && user.isEnrolled()) {
 				logger.info("user Came : ",user);
 				logger.info('Successfully loaded member from persistence');
 				client._userContext = user;
+				let cert = X509.parseCert(user._identity[Identity]._certificate);
+				logger.debug("parsed cert: "+cert);
+				logger.debug("cert extensions ")
+				logger.debug(cert.extensions)
+				logger.debug("cert extensions[......] "+cert.extensions['1.2.3.4.5.6.7.8.1'])
+				if(cert && cert.extensions && cert.extensions['1.2.3.4.5.6.7.8.1']) {
+					logger.debug("reached line 324 member")
+					let attr_string=cert.extensions['1.2.3.4.5.6.7.8.1'];
+					let attr_object = JSON.parse(attr_string);
+					let attrs = attr_object.attrs;
+					logger.debug("attributes: "+attrs)
+				}
 				return user;
-			} else {
+			} else {*/
 				let caClient = caClients[userOrg];
 				return caClient.enroll({
 					enrollmentID: username,
@@ -337,6 +350,7 @@ var enrollRegisteredUsers = function(username,passkey,userOrg, isJson) {
 					let attr_string=cert.extensions['1.2.3.4.5.6.7.8.1'];
 					let attr_object = JSON.parse(attr_string);
 					let attrs = attr_object.attrs;
+					enrolledUserAttributes = attrs;
 					logger.debug("attributes: "+attrs)
 				}
 				
@@ -351,12 +365,13 @@ var enrollRegisteredUsers = function(username,passkey,userOrg, isJson) {
 					logger.error(util.format('%s enroll failed: %s', username, err.stack ? err.stack : err));
 					return '' + err;
 				});;
-			}
+			//}
 		});
 	}).then((user) => {
 		if (isJson && isJson === true) {
 			var response = {
 				success: true,
+				attrs:enrolledUserAttributes,
 				secret: user._enrollmentSecret,
 				message: username + ' enrolled Successfully',
 			};
@@ -442,6 +457,7 @@ var getRegisteredUsers = function(username,userOrg, isJson) {
 				if(user.isEnrolled()){
 					logger.info('Successfully loaded member from persistence');
 					client._userContext = user;
+					
 					return user;
 				}else{
 					logger.info('dint entered into user.isEnrolled()')
