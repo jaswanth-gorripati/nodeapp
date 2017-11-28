@@ -69,6 +69,12 @@ services:
         - ./channel/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/crypto/peerOrg2
         #- ~/goProjects/src/github.com/hyperledger/fabric:/opt/gopath/src/github.com/hyperledger/fabric
 
+  couchdb0:
+    container_name: couchdb0
+    image: hyperledger/fabric-couchdb
+    ports:
+      - "5984:5984"
+   
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
     extends:
@@ -79,6 +85,8 @@ services:
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
       - GOPATH=/opt/gopath
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
     ports:
       - 7051:7051
       - 7053:7053
@@ -87,6 +95,13 @@ services:
         - ~/goProjects/src/github.com/hyperledger/fabric:/opt/gopath/src/github.com/hyperledger/fabric
     depends_on:
       - orderer.example.com
+      - couchdb0
+
+  couchdb1:
+    container_name: couchdb1
+    image: hyperledger/fabric-couchdb
+    ports:
+      - "1919:5984"
 
   peer1.org1.example.com:
     container_name: peer1.org1.example.com
@@ -98,6 +113,8 @@ services:
       - CORE_PEER_LOCALMSPID=Org1MSP
       - GOPATH=/opt/gopath
       - CORE_PEER_ADDRESS=peer1.org1.example.com:7051
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
     ports:
       - 7056:7051
       - 7058:7053
@@ -106,6 +123,7 @@ services:
         - ~/goProjects/src/github.com/hyperledger/fabric:/opt/gopath/src/github.com/hyperledger/fabric
     depends_on:
       - orderer.example.com
+      - couchdb1
 
   peer0.org2.example.com:
     container_name: peer0.org2.example.com
