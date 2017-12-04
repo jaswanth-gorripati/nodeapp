@@ -174,7 +174,11 @@ app.post('/register', function(req, res) {
 		{"name":"worksin","value":orgName,ecert:true},{"name":"position","value":position,ecert:true},{"name":"isAdmin","value":"",ecert:true}]
 	}else if(Atype === "student") {
 		req_attrs = [{"name":"id","value":uniqueId,ecert:true},{"name":"accountType","value":Atype,ecert:true},
-		{"name":"worksin","value":" ",ecert:true},{"name":"studyingIn","value":orgName,ecert:true},{"name":"isAdmin","value":"",ecert:true},{"name":"position","value":position,ecert:true}]
+		{"name":"worksin","value":" ",ecert:true},{"name":"studyingIn","value":orgName,ecert:true},{"name":"isAdmin","value":"",ecert:true},{"name":"position","value":"",ecert:true}]
+	}else if(Atype === "employee") {
+		var position = req.body.position;
+		req_attrs = [{"name":"id","value":uniqueId,ecert:true},{"name":"accountType","value":Atype,ecert:true},
+		{"name":"worksin","value":orgName,ecert:true},{"name":"studyingIn","value":"",ecert:true},{"name":"isAdmin","value":"",ecert:true},{"name":"position","value":position,ecert:true}]
 	}
 	if( Atype ==="employer" || Atype ==="college/school staff"){
 		if( Atype ==="college/school staff"){
