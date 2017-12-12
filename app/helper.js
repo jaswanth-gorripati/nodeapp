@@ -336,33 +336,36 @@ var enrollRegisteredUsers = function(username,passkey,userOrg, isJson) {
 						'Error:')) {
 					logger.error(username + ' enrollment failed need to register');
 					return message;
+				}else{
+					logger.debug(username + ' enrolled successfully');
+					
+					logger.debug("message :"+message.certificate);
+					let cert = X509.parseCert(message.certificate);
+					logger.debug("parsed cert: "+cert);
+					logger.debug("cert extensions ")
+					logger.debug(cert.extensions)
+					logger.debug("cert extensions[......] "+cert.extensions['1.2.3.4.5.6.7.8.1'])
+					if(cert && cert.extensions && cert.extensions['1.2.3.4.5.6.7.8.1']) {
+						logger.debug("reached line 324 member")
+						let attr_string=cert.extensions['1.2.3.4.5.6.7.8.1'];
+						let attr_object = JSON.parse(attr_string);
+						let attrs = attr_object.attrs;
+						enrolledUserAttributes = attrs;
+						logger.debug("attributes: "+attrs)
+					}
+					
+	
+					member = new User(username);
+					member._enrollmentSecret = passkey;
+					return member.setEnrollment(message.key, message.certificate, getMspID(userOrg));
 				}
-				logger.debug(username + ' enrolled successfully');
 				
-				logger.debug("message :"+message.certificate);
-				let cert = X509.parseCert(message.certificate);
-				logger.debug("parsed cert: "+cert);
-				logger.debug("cert extensions ")
-				logger.debug(cert.extensions)
-				logger.debug("cert extensions[......] "+cert.extensions['1.2.3.4.5.6.7.8.1'])
-				if(cert && cert.extensions && cert.extensions['1.2.3.4.5.6.7.8.1']) {
-					logger.debug("reached line 324 member")
-					let attr_string=cert.extensions['1.2.3.4.5.6.7.8.1'];
-					let attr_object = JSON.parse(attr_string);
-					let attrs = attr_object.attrs;
-					enrolledUserAttributes = attrs;
-					logger.debug("attributes: "+attrs)
-				}
-				
-
-				member = new User(username);
-				member._enrollmentSecret = passkey;
-				return member.setEnrollment(message.key, message.certificate, getMspID(userOrg));
 				}).then(() => {
 					client.setUserContext(member);
 					return member;
 				}, (err) => {
 					logger.error(util.format('%s enroll failed: %s', username, err.stack ? err.stack : err));
+					isJson = false;
 					return '' + err;
 				});;
 			//}
